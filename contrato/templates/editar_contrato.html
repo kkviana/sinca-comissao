@@ -1,0 +1,70 @@
+{% extends 'base.html' %}
+
+{% block content %}
+  <h1>Editar Contrato</h1>
+  <h2>Informações do Contrato</h2>
+  <p>ID do Contrato: {{ contrato.id }}</p>
+  <p>Data do Contrato: {{ contrato.data_contrato }}</p>
+  <p>Valor do Contrato: {{ contrato.total_contrato }}</p>
+
+  <h2>Informações do Cliente</h2>
+  <p>Nome do Cliente: {{ contrato.cliente.nome }}</p>
+  <p>Email do Cliente: {{ contrato.cliente.email }}</p>
+<table>
+  <tbody>
+    <h2>Informações dos Produtos</h2>
+    {% for produto in produtos %}
+      <tr>
+        <td>{{ produto.produto.nome }}</td>
+        <td>{{ produto.produto.descricao }}</td>
+        <td>{{ produto.quantidade }}</td>
+        <td>{{ produto.valor_unitario }}</td>
+        <td>
+          <a href="{% url 'editar_item_contrato' produto.id %}" class="btn btn-primary">Editar</a>
+        </td>
+        <td>
+          <form action="{% url 'cancelar_item_contrato' produto.id %}" method='POST' class="btn btn-primary">
+            {% csrf_token %}
+            <input type="submit" value="Excluir">
+          </form>
+        </td>
+      </tr>
+    {% empty %}
+      <tr>
+        <td colspan="4">Nenhum produto associado a este contrato.</td>
+      </tr>
+    {% endfor %}
+  </tbody>
+</table>
+<h2>Eventos do Contrato</h2>
+<table>
+  <thead>
+    <tr>
+      <th>Tipo de Evento</th>
+      <th>Descrição do Evento</th>
+      <th>Data do Evento</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for evento in eventos %}
+      <tr>
+        <td>{{ evento.evento_tipo.nome }}</td>
+        <td>{{ evento.evento_descricao }}</td>
+        <td>{{ evento.evento_data }}</td>
+      </tr>
+    {% empty %}
+      <tr>
+        <td colspan="3">Nenhum evento registrado para este contrato.</td>
+      </tr>
+    {% endfor %}
+  </tbody>
+</table>
+  <form action="{% url 'adicionar_item_contrato' contrato.id %}" method="get">
+    {% csrf_token %}
+    <input type="submit" value="Adicionar item">
+  </form>
+  <form action="{% url 'cancelar_contrato' contrato.id %}" method="post">
+    {% csrf_token %}
+    <input type="submit" value="Cancelar Contrato">
+  </form>
+{% endblock %}

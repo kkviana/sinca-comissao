@@ -1,0 +1,67 @@
+{% extends 'base.html' %}
+
+{% block titulo_aba %}
+    Lista de Contratos
+{% endblock %}
+
+{% block content %}
+  <h1 class="text-center mb-4">Lista de Contratos</h1>
+  <table class="table table-striped">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Data</th>
+        <th>Cliente</th>
+        <th>Total</th>
+        <th>Editar</th>
+        <th>Cancelar</th>
+      </tr>
+    </thead>
+    <tbody class="table-group-divider">
+      {% for contrato in contratos %}
+        <tr>
+          <td>{{ contrato.id }}</td>
+          <td>{{ contrato.data_contrato|date:"d/m/Y" }}</td>
+          <td>{{ contrato.cliente.nome }}</td>
+          <td>R$ {{ contrato.total_contrato|floatformat:2 }}</td>
+          <td>
+            <a href="{% url 'editar_contrato' contrato.id %}" class="btn btn-primary">Editar</a>
+          </td>
+          <td>
+            <form id="form-{{ contrato.id }}" action="{% url 'cancelar_contrato' contrato.id %}" method="post">
+              {% csrf_token %}
+              <input type="hidden" name="motivo" value="{{ contrato.id }}">
+              <input class='btn btn-danger'type="button" value="Cancelar Contrato" onclick="exibirCampoRazao('{{ contrato.id }}')">
+            </form>
+          </td>
+        </tr>
+      {% empty %}
+        <tr>
+          <td colspan="4">Nenhum contrato encontrado.</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <script>
+    function exibirCampoRazao(id_contrato) {
+      var form = document.getElementById('form-' + id_contrato);
+      var razaoContainer = document.createElement('div');
+      razaoContainer.innerHTML = '<label for="razao">Razão de Cancelamento:</label><input type="text" name="razao" id="razao"><input type="button" value="Confirmar" onclick="cancelarContrato(' + id_contrato + ')">';
+      form.appendChild(razaoContainer);
+    }
+
+    function cancelarContrato(id_contrato) {
+      var form = document.getElementById('form-' + id_contrato);
+      var razaoInput = document.getElementById('razao');
+      if (razaoInput.value != null && razaoInput.value != "") {
+        var motivoInput = document.createElement('input');
+        motivoInput.type = 'hidden';
+        motivoInput.name = 'motivo';
+        motivoInput.value = razaoInput.value;
+        form.appendChild(motivoInput);
+        form.submit();
+      }
+    }
+  </script>
+{% endblock %}

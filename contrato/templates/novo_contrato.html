@@ -1,0 +1,134 @@
+{% extends 'base.html' %}
+
+{% block titulo_aba %}
+Novo Contrato
+{% endblock %}
+
+{% block content %}
+
+<div class="container-fluid">
+  <h1 class="text-center mb-4">Novo Contrato</h1>
+  <form method="POST" action="/contrato/novo/" onsubmit="salvarContrato(event)">
+    {% csrf_token %}
+    <div class="form-group">
+      <h2 class="mt-4 mb-3">Selecionar Cliente</h2>
+      <label for="cliente">Selecione um cliente:</label>
+      <select name="cliente" id="cliente" class="form-control" required>
+        <option value="" selected>Selecione um cliente</option>
+        {% for cliente in clientes %}
+        <option value="{{ cliente.id }}">{{ cliente.nome }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="form-group">
+      <h2 class="mt-4 mb-3">Selecionar Vendedor</h2>
+      <label for="vendedor">Selecione um vendedor:</label>
+      <select name="vendedor" id="vendedor" class="form-control" required>
+        <option value="" selected>Selecione um vendedor</option>
+        {% for vendedor in vendedores %}
+        <option value="{{ vendedor.id }}">{{ vendedor.nome }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="form-group">
+      <div class="row">       
+        <div class="col-md-6">
+          <h2 class="mt-4 mb-3">Data do Contrato</h2>
+          <label for="data_contrato">Data do Contrato:</label>
+          <input type="date" name="data_contrato" id="data_contrato" class="form-control" required>
+        </div>
+        <div class="col-md-6">
+          <h2 class="mt-4 mb-3">Data de Instalação</h2>
+          <label for="data_instalacao">Data de Instalação:</label>
+          <input type="date" name="data_instalacao" id="data_instalacao" class="form-control" required>
+        </div>
+      </div>
+    </div>
+    
+    <h2 class="mt-4 mb-3">Adicionar Produtos</h2>
+    <div id="form_produto" class="row">
+      <div class="col-md-6">
+        <label for="produto">Produto:</label>
+        <select name="produto" id="produto" class="form-control" onchange="atualizarPreco()">
+          <option value="" selected>Selecione um produto</option>
+          {% for produto in produtos %}
+          <option value="{{ produto.id }}" data-preco="{{ produto.preco }}">{{ produto.nome }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-md-2">
+        <label for="preco">Preço:</label>
+        <input type="number" name="preco" id="preco" class="form-control">
+      </div>
+      <div class="col-md-2">
+        <label for="quantidade">Quantidade:</label>
+        <input type="number" name="quantidade" id="quantidade" class="form-control" value="1">
+      </div>
+      <div class="col-md-2 d-flex align-items-end">
+        <button type="button" class="btn btn-primary mt-2" onclick="adicionarProduto()">Adicionar</button>
+      </div>
+    </div>
+
+    <h2 class="mt-4 mb-3">Lista de Produtos</h2>
+    <ul id="lista_produtos" class="list-group">
+    </ul>
+    <input type="hidden" name="produtos" id="produtos" value="">
+    <h2 class="mt-4 mb-3">Total do Contrato</h2>
+    <p id="total_contrato" class="h4">R$ 0</p>
+    <input type="hidden" name="total_contrato" id="total_contrato_input" value="">
+    <button type="submit" class="btn btn-primary mt-3">Salvar Contrato</button>
+  </form>
+</div>
+<script>
+  const listaProdutos = [];
+
+  function adicionarProduto() {
+    const produtoId = document.querySelector('#produto').value;
+    const produtoNome = document.querySelector('#produto option:checked').textContent;
+    const preco = document.querySelector('#preco').value;
+    const quantidade = document.querySelector('#quantidade').value;
+
+    const novoProduto = {
+      id: produtoId,
+      nome: produtoNome,
+      preco: preco,
+      quantidade: quantidade
+    };
+
+    listaProdutos.push(novoProduto);
+
+    const novoItem = document.createElement('li');
+    novoItem.textContent = `${produtoNome} - R$ ${preco} - ${quantidade} unidades`;
+    document.querySelector('#lista_produtos').appendChild(novoItem);
+
+    atualizarTotalContrato();
+  }
+
+  function atualizarPreco() {
+    const produtoId = document.querySelector('#produto').value;
+    const preco = document.querySelector('#produto option:checked').getAttribute('data-preco');
+    document.querySelector('#preco').value = preco;
+  }
+
+  function atualizarTotalContrato() {
+    let totalContrato = 0;
+    listaProdutos.forEach(produto => {
+      const preco = parseFloat(produto.preco);
+      const quantidade = parseInt(produto.quantidade);
+      totalContrato += preco * quantidade;
+    });
+
+    document.querySelector('#total_contrato').textContent = `Total: R$ ${totalContrato.toFixed(2)}`;
+    document.querySelector('#total_contrato_input').value = totalContrato.toFixed(2);
+  }
+
+  function salvarContrato(event) {
+    if (listaProdutos.length === 0) {
+      event.preventDefault();
+      alert('Adicione pelo menos um produto ao contrato.');
+    } else {
+      document.querySelector('#produtos').value = JSON.stringify(listaProdutos);
+    }
+  }
+</script>
+{% endblock %}

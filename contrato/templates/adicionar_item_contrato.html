@@ -1,0 +1,91 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container">
+    <form method="POST" action="{% url 'adicionar_item_contrato' contrato.id %}" method="post" onsubmit="salvarContrato(event)">
+        {% csrf_token %}
+        <h2 class="mt-4 mb-3">Adicionar Produtos</h2>
+        <div id="form_produto" class="row">
+            <div class="col-md-6">
+                <label for="produto">Produto:</label>
+                <select name="produto" id="produto" class="form-control" onchange="atualizarPreco()">
+                    <option value="" selected>Selecione um produto</option>
+                    {% for produto in produtos %}
+                    <option value="{{ produto.id }}" data-preco="{{ produto.preco }}">{{ produto.nome }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label for="preco">Preço:</label>
+                <input type="number" name="preco" id="preco" class="form-control">
+            </div>
+            <div class="col-md-2">
+                <label for="quantidade">Quantidade:</label>
+                <input type="number" name="quantidade" id="quantidade" class="form-control">
+            </div>
+            <div class="col-md-2 d-flex align-items-end">
+                <button type="button" class="btn btn-primary mt-2" onclick="adicionarProduto()">Adicionar</button>
+            </div>
+        </div>
+
+        <h2 class="mt-4 mb-3">Lista de Produtos</h2>
+        <ul id="lista_produtos" class="list-group">
+        </ul>
+        <input type="hidden" name="produtos" id="produtos" value="">
+        <h2 class="mt-4 mb-3">Total novos itens</h2>
+        <p id="total_contrato" class="h4">R$ 0</p>
+        <input type="hidden" name="total_contrato" id="total_contrato_input" value="">
+        <input type="submit" value="Adicionar itens">
+    </form>
+</div>
+<script>
+  const listaProdutos = [];
+  
+  function adicionarProduto() {
+      const produtoId = document.querySelector('#produto').value;
+      const produtoNome = document.querySelector('#produto option:checked').textContent;
+      const preco = document.querySelector('#preco').value;
+      const quantidade = document.querySelector('#quantidade').value;
+  
+      const novoProduto = {
+          id: produtoId,
+          nome: produtoNome,
+          preco: preco,
+          quantidade: quantidade
+      };
+  
+      listaProdutos.push(novoProduto);
+  
+      const novoItem = document.createElement('li');
+      novoItem.textContent = `${produtoNome} - R$ ${preco} - ${quantidade} unidades`;
+      document.querySelector('#lista_produtos').appendChild(novoItem);
+  
+      atualizarTotalContrato();
+  }
+  
+  function atualizarPreco() {
+      const produtoId = document.querySelector('#produto').value;
+      const preco = document.querySelector('#produto option:checked').getAttribute('data-preco');
+      document.querySelector('#preco').value = preco;
+  }
+  
+  function atualizarTotalContrato() {
+      let totalContrato = 0;
+      listaProdutos.forEach(produto => {
+          const preco = parseFloat(produto.preco);
+          const quantidade = parseInt(produto.quantidade);
+          totalContrato += preco * quantidade;
+      });
+  
+      document.querySelector('#total_contrato').textContent = `R$ ${totalContrato.toFixed(2)}`;
+      document.querySelector('#total_contrato_input').value = totalContrato.toFixed(2);
+  }
+  
+  function salvarContrato(event) {
+      event.preventDefault();
+  
+      document.querySelector('#produtos').value = JSON.stringify(listaProdutos);
+      document.querySelector('form').submit();
+  }
+  </script>
+  {% endblock %}

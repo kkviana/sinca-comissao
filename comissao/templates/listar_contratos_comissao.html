@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<form method="post" action="/comissao/fechar_comissao/">
+  {% csrf_token %}
+  <input type="hidden" name="mes_anterior" value="{{ mes_anterior }}">
+    <table>
+      <thead>
+        <tr>
+          <th>Data do contrato</th>
+          <th>Total do contrato</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for contrato in contratos %}
+        <tr>
+          <td>
+            <input type="checkbox" name="contratos" value="{{ contrato.id }}" id="contrato{{ contrato.id }}"
+                  {% if contrato.data_instalacao %}
+                    {% with contrato_mes=contrato.data_instalacao|date:"m" contrato_ano=contrato.data_instalacao|date:"Y" %}
+                      {% if contrato_mes == mes_anterior and contrato_ano == mes_anterior|slice:3 %}
+                        checked
+                      {% endif %}
+                    {% endwith %}
+                  {% endif %}>
+            <label for="contrato{{ contrato.id }}">{{ contrato.data_contrato }} - R$ {{ contrato.total_contrato }}</label>
+          </td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+    <input type="submit" value="Fechar Comissão">
+  </form>
+  <script>
+    // Captura o mês atual e subtrai 1 para obter o mês anterior
+    var dataAtual = new Date();
+    var mesAtual = dataAtual.getMonth() + 1;
+    var anoAtual = dataAtual.getFullYear();
+    var mesAnterior = mesAtual - 1;
+    if (mesAnterior === 0) {
+      mesAnterior = 12;
+      anoAtual -= 1;
+    }
+    
+    // Atualiza o valor do campo mes_anterior no formulário
+    document.getElementsByName("mes_anterior")[0].value = mesAnterior + '/' + anoAtual;
+  </script>
+{% endblock %}

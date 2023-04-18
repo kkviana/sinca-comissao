@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+
+{% block content %}
+  <h1>Editar Item de Contrato</h1>
+  <form action="{% url 'editar_item_contrato' item_contrato.id %}" method="post">
+    {% csrf_token %}
+    <label for="valor_unitario">Valor Unitário:</label>
+    <input type="text" name="valor_unitario" value="{{ item_contrato.valor_unitario }}">
+    <br>
+    <label for="quantidade">Quantidade:</label>
+    <input type="text" name="quantidade" value="{{ item_contrato.quantidade }}">
+    <br>
+    <input type="submit" value="Salvar">
+  </form>
+  <a href="{% url 'editar_contrato' id_contrato=item_contrato.contrato.id %}">Voltar</a>
+{% endblock %}

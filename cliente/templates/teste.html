@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+
+{% block content %}
+  <h1>Clientes</h1>
+  <form>
+    <label for="cliente">Selecione um cliente:</label>
+    <select name="cliente" id="cliente">
+      {% for cliente in clientes %}
+        <option value="{{ cliente.id }}">{{ cliente.nome }}</option>
+      {% endfor %}
+    </select>
+    <button type="submit">Ver Detalhes</button>
+  </form>
+{% endblock %}

@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+
+{% block titulo_aba %}
+Consulta de Comissões
+{% endblock %}
+
+{% block content %}
+  <h1 class="text-center mb-5">Lista de Comissões</h1>
+  <div class="table-responsive">
+    <table class="table table-striped">
+      <thead>
+        <tr>
+          <th scope="col">Mês</th>
+          <th scope="col">Vendedor</th>
+          <th scope="col">Comissão</th>
+        </tr>
+      </thead>
+      <tbody class="table-group-divider">
+        {% for comissao in comissoes %}
+        <tr>
+          <td>{{ comissao.data }}</td>
+          <td>{{ comissao.contrato__vendedor__nome }}</td>
+          <td>R$ {{ comissao.soma_comissao|floatformat:2 }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+{% endblock %}

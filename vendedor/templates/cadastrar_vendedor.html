@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+
+{% block titulo_aba %}
+    Cadastro de Vendedor
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid col-md-11">
+    <h1 class="mb-4">Cadastrar Vendedor</h1>
+    <form method="POST">
+        {% csrf_token %}
+        <div class="form-group">
+            <label for="nome">Nome:</label>
+            <input type="text" id="nome" name="nome" class="form-control" required>
+            <div class="invalid-feedback">Por favor, insira um nome válido.</div>
+        </div>
+        <button type="submit" class="btn btn-primary mt-3">Cadastrar</button>
+    </form>
+</div>
+{% endblock %}

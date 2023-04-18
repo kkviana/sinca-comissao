@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Remover Item do Contrato</title>
+</head>
+<body>
+    <h1>Remover Item do Contrato</h1>
+    <p>Deseja realmente remover o item do contrato?</p>
+    <form method="post">
+        {% csrf_token %}
+        <input type="submit" value="Confirmar">
+    </form>
+    <a href="{% url 'editar_contrato' id_contrato=contrato.id %}">Cancelar</a>
+</body>
+</html>

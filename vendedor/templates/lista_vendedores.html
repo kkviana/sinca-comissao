@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+
+{% block titulo_aba %}
+    Consulta de Vendedores
+{% endblock %}
+
+{% block content %}
+    <h1 class="text-center mb-4">Listagem de Vendedores</h1>
+    <div class="table-responsive">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Nome</th>
+                    <th>Inativar</th>
+                </tr>
+            </thead>
+            <tbody class="table-group-divider">
+                {% for vendedor in vendedores %}
+                <tr>
+                    <td>{{ vendedor.id }}</td>
+                    <td>{{ vendedor.nome }}</td>
+                    <td>
+                        <a href="{% url 'inativar_vendedor' vendedor.id %}" class="btn btn-sm btn-danger">Inativar</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% endblock %}

@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+
+{%block titulo_aba%}
+Fechar Comissão
+{%endblock%}
+
+{% block content %}
+<div class="container-fluid">
+  <div class="row justify-content-center">
+    <div class="col-md-12 col-sm-12">
+      <div class="card shadow-sm">
+        <div class="card-body">
+          <form method="post">
+            {% csrf_token %}
+            <div class="form-group">
+              <label for="data" class="font-weight-bold">Selecione a data:</label>
+              <input type="month" id="data" name="data" class="form-control" required>
+            </div>
+            <button type="submit" class="btn btn-primary btn-block mt-3">Fechar Comissão</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

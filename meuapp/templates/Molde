@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+
+{% block title %}
+    Cadastro de Produtos
+{% endblock %}
+
+{% block content %}
+
+
+{% endblock %}

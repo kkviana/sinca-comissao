@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+
+{% block titulo_aba %}
+    Lista de Produtos
+{% endblock %}
+
+{% block content %}
+<div>
+  <h1 class="text-center mb-4">Listagem de Produtos</h1>
+      <table class="table table-striped">
+        <thead>
+          <tr>
+            <th scope="col">ID</th>
+            <th scope="col">Nome</th>
+            <th scope="col">Descrição</th>
+            <th scope="col">Preço</th>
+            <th scope="col">Editar</th>
+            <th scope="col">Ações</th>
+          </tr>
+        </thead>
+        <tbody class="table-group-divider">
+          {% for produto in produtos %}
+          <tr>
+            <td>{{ produto.id }}</td>
+            <td>{{ produto.nome }}</td>
+            <td>{{ produto.descricao }}</td>
+            <td>R$ {{ produto.preco }}</td>
+            <td>
+              <a href="{% url 'editar_produto' produto.id %}" class="btn btn-sm btn-primary">Editar</a>
+            </td>
+            <td>
+              <a href="{% url 'inativar_produto' produto.id %}" class="btn btn-sm btn-danger">Inativar</a>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+</div>
+{% endblock %}
