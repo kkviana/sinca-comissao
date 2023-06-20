@@ -1,0 +1,765 @@
+{% extends "base.html" %}
+
+{% block titulo_aba %}
+    Dashboard Contratos
+{% endblock %}
+
+{% block content %}
+{% load i18n %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
+<!-- Gráfico de barras para vendas por mês -->
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-2">
+            <label for="ano">Escolha o ano:</label>
+            <select id="ano" class="form-control" onchange="atualizarGrafico(this.value)">
+                {% for ano in anos %}
+                    {% if forloop.last %}
+                        <option value="{{ ano|date:'Y' }}" selected>{{ ano|date:'Y' }}</option>
+                    {% else %}
+                        <option value="{{ ano|date:'Y' }}">{{ ano|date:'Y' }}</option>
+                    {% endif %}
+                {% endfor %}
+            </select>
+        </div>
+    </div>
+    <div class="row">
+        <h1 class="text-center mb-2 font-weight-bold">Gráficos Números de Venda</h1>
+    </div>
+    <div class="row">
+        <div class="col-md-6">
+            <h2> Gráfico Número Vendas Por Mês </h2>
+            <canvas id="vendasPorMes"></canvas>
+        </div>
+        <div class="col-md-6">
+            <h2> Grafico Número Vendas Por Ano</h2>
+            <canvas id="vendasPorAno"></canvas>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6">
+            <h2> Gráfico Número Cancelamentos Por Mês </h2>
+            <canvas id="grafico_cancelamentos_mes"></canvas>
+        </div>
+        <div class="col-md-6">
+            <h2> Grafico Número Cancelamentos Por Ano</h2>
+            <canvas id="grafico_cancelamentos_ano"></canvas>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6">
+            <h2> Gráfico Saldo Por Mês</h2>
+            <canvas id="grafico_saldo_por_mes"></canvas>
+        </div>
+        <div class="col-md-6">
+            <h2> Grafico Saldo Por Ano</h2>
+            <canvas id="grafico_saldo_por_ano"></canvas>
+        </div>
+    </div>
+
+    <div class="row">
+        <h1 class="text-center mt-4 mb-2 font-weight-bold">Gráficos Valores de Venda</h1>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6">
+            <h2> Gráfico Vendas Por Mês Valor</h2>
+            <canvas id="grafico_valor_mes"></canvas>
+        </div>
+        <div class="col-md-6">
+            <h2> Grafico Vendas Por Ano Valor</h2>
+            <canvas id="grafico_valor_ano"></canvas>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6">
+            <h2> Gráfico Cancelamento Por Mês Valor </h2>
+            <canvas id="grafico_cancelamentos_mes_valor"></canvas>
+        </div>
+        <div class="col-md-6">
+            <h2> Grafico Cancelamento Por Ano Valor</h2>
+            <canvas id="grafico_cancelamentos_ano_valor"></canvas>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-6">
+            <h2> Gráfico Saldo Por Mês Valor</h2>
+            <canvas id="grafico_saldo_por_mes_valor"></canvas>
+        </div>
+        <div class="col-md-6">
+            <h2> Grafico Saldo Por Ano Valor</h2>
+            <canvas id="grafico_saldo_por_ano_valor"></canvas>
+        </div>
+    </div>
+
+    <div class="row">
+        <h1 class="text-center mt-4 mb-2 font-weight-bold">Gráficos Acumulado de Venda</h1>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6">
+            <h2> Gráfico Saldo Por Ano Quantidade Acumulado</h2>
+            <canvas id="grafico_saldo_acumulado"></canvas>
+        </div>
+        <div class="col-md-6">
+            <h2> Grafico Saldo Por Ano Valor Acumulado</h2>
+            <canvas id="grafico_saldo_valor_acumulado"></canvas>
+        </div>
+    </div>
+</div>
+<script>
+function atualizarGrafico(ano) {
+    // Faz uma requisição para buscar os dados referentes ao ano selecionado
+    fetch('/dashboard/vendas-por-mes/' + ano + '/')
+        .then(response => response.json())
+        .then(data => {
+            // Atualiza os dados do gráfico com os dados do ano selecionado
+            vendasPorMesChart.data.labels = data.labels;
+            vendasPorMesChart.data.datasets[0].data = data.data;
+            vendasPorMesChart.update();
+        });
+    fetch('/dashboard/cancelamentos-por-mes/' + ano + '/')
+        .then(response => response.json())
+        .then(data => {
+            // Atualiza os dados do gráfico com os dados do ano selecionado
+            CancelamentosChart.data.labels = data.labels;
+            CancelamentosChart.data.datasets[0].data = data.data;
+            CancelamentosChart.update();
+        });
+    fetch('/dashboard/valor-por-mes/' + ano + '/')
+        .then(response => response.json())
+        .then(data => {
+            // Atualiza os dados do gráfico com os dados do ano selecionado
+            ValorChart.data.labels = data.labels;
+            ValorChart.data.datasets[0].data = data.data;
+            ValorChart.update();
+        });
+    fetch('/dashboard/cancelamentos-por-mes-valor/' + ano + '/')
+        .then(response => response.json())
+        .then(data => {
+            // Atualiza os dados do gráfico com os dados do ano selecionado
+            CancelamentosValorChart.data.labels = data.labels;
+            CancelamentosValorChart.data.datasets[0].data = data.data;
+            CancelamentosValorChart.update();
+        });
+    fetch('/dashboard/saldo-por-mes-valor/' + ano + '/')
+        .then(response => response.json())
+        .then(data => {
+            // Atualiza os dados do gráfico com os dados do ano selecionado
+            SaldoPorMesValorChart.data.labels = data.labels;
+            SaldoPorMesValorChart.data.datasets[0].data = data.data;
+            SaldoPorMesValorChart.update();
+        });
+    fetch('/dashboard/saldo-por-mes/' + ano + '/')
+        .then(response => response.json())
+        .then(data => {
+            // Atualiza os dados do gráfico com os dados do ano selecionado
+            SaldoPorMesChart.data.labels = data.labels;
+            SaldoPorMesChart.data.datasets[0].data = data.data;
+            SaldoPorMesChart.update();
+        });
+}
+
+function atualizarGraficoCancelamento(ano) {
+    // Faz uma requisição para buscar os dados referentes ao ano selecionado
+    fetch('/dashboard/cancelamentos-por-mes/' + ano + '/')
+        .then(response => response.json())
+        .then(data => {
+            // Atualiza os dados do gráfico com os dados do ano selecionado
+            CancelamentosChart.data.labels = data.labels;
+            CancelamentosChart.data.datasets[0].data = data.data;
+            CancelamentosChart.update();
+        });
+}
+
+function atualizarGraficoValor(ano) {
+    // Faz uma requisição para buscar os dados referentes ao ano selecionado
+    fetch('/dashboard/valor-por-mes/' + ano + '/')
+        .then(response => response.json())
+        .then(data => {
+            // Atualiza os dados do gráfico com os dados do ano selecionado
+            ValorChart.data.labels = data.labels;
+            ValorChart.data.datasets[0].data = data.data;
+            ValorChart.update();
+        });
+}
+
+function atualizarGraficoCancelamentoValor(ano) {
+    // Faz uma requisição para buscar os dados referentes ao ano selecionado
+    fetch('/dashboard/cancelamentos-por-mes-valor/' + ano + '/')
+        .then(response => response.json())
+        .then(data => {
+            // Atualiza os dados do gráfico com os dados do ano selecionado
+            CancelamentosValorChart.data.labels = data.labels;
+            CancelamentosValorChart.data.datasets[0].data = data.data;
+            CancelamentosValorChart.update();
+        });
+}
+
+// Dados de vendas por mês
+var vendasPorMesData = {
+    labels: [{% for mes in meses %}"{% trans mes %}",{% endfor %}],
+    datasets: [{
+        label: 'Vendas por Mês',
+        data: [{% for venda in vendas_por_mes %}{{ venda.numero_vendas }},{% endfor %}],
+        backgroundColor: 'rgba(18, 176, 2, 0.2)',
+        borderColor: 'rgba(11, 113, 0)',
+        borderWidth: 1
+    }]
+};
+
+// Configurações do gráfico de vendas por mês
+var vendasPorMesOptions = {
+    scales: {
+        y: {
+            beginAtZero: true,
+            precision: 0,
+        }
+    }
+};
+
+// Criação do gráfico de vendas por mês
+var vendasPorMesChart = new Chart(document.getElementById('vendasPorMes'), {
+    type: 'bar',
+    data: vendasPorMesData,
+    options: vendasPorMesOptions
+});
+
+var vendasPorAnoData = {
+    labels: [{% for ano in anos %}"{{ ano|date:'Y' }}",{% endfor %}],
+    datasets: [{
+        label: 'Vendas por Ano',
+        data: [{% for venda in vendas_por_ano %}{{ venda.numero_vendas }},{% endfor %}],
+        backgroundColor: 'rgba(18, 176, 2, 0.2)',
+        borderColor: 'rgba(11, 113, 0)',
+        borderWidth: 1
+    }]
+};
+
+// Configurações do gráfico de vendas por mês
+var vendasPorAnoOptions = {
+    scales: {
+        y: {
+            beginAtZero: true,
+            precision: 0,
+        }
+    }
+};
+
+// Criação do gráfico de vendas por mês
+var vendasPorAnoChart = new Chart(document.getElementById('vendasPorAno'), {
+    type: 'bar',
+    data: vendasPorAnoData,
+    options: vendasPorAnoOptions
+});
+
+// Gráfico de cancelamentos por mês
+var ctx = document.getElementById('grafico_cancelamentos_mes').getContext('2d');
+var CancelamentosChart = new Chart(ctx, {
+    type: 'bar',
+    data: {
+        labels: [{% for mes in meses %}"{% trans mes %}",{% endfor %}],
+        datasets: [{
+            label: 'Cancelamentos por mês',
+            data: [{% for cancelamento in cancelamentos_por_mes %}{{ cancelamento.numero_cancelamentos }},{% endfor %}],
+            backgroundColor: 'rgba(139, 0, 0, 0.2)',
+            borderColor: '#8B0000',
+            borderWidth: 1
+        }]
+    },
+    options: {
+        plugins: {
+            datalabels: {
+                anchor: 'end',
+                align: 'top',
+                formatter: function(value, context) {
+                    return value;
+                }
+            }
+        },
+        legend: {
+            display: false
+        },
+        scales: {
+            yAxes: [{
+                ticks: {
+                    beginAtZero: true
+                }
+            }]
+        }
+    }
+});
+
+// Gráfico de cancelamentos por ano
+var ctx = document.getElementById('grafico_cancelamentos_ano').getContext('2d');
+var myChart = new Chart(ctx, {
+    type: 'bar',
+    data: {
+        labels: [
+                {% for cancelamento in cancelamentos_por_ano %}
+                {{ cancelamento.evento_data__year }},
+                {% endfor %}
+            ],
+        datasets: [{
+            label: 'Cancelamentos por ano',
+            data: [
+                {% for cancelamento in cancelamentos_por_ano %}
+                {{ cancelamento.numero_cancelamentos }},
+                {% endfor %}
+            ],
+            backgroundColor: 'rgba(139, 0, 0, 0.2)',
+            borderColor: '#8B0000',
+            borderWidth: 1
+        }]
+    },
+    options: {
+        plugins: {
+            datalabels: {
+                anchor: 'end',
+                align: 'top',
+                formatter: function(value, context) {
+                    return value;
+                }
+            }
+        },
+        legend: {
+            display: false
+        },
+        scales: {
+            yAxes: [{
+                ticks: {
+                    beginAtZero: true
+                }
+            }]
+        }
+    }
+});
+
+var ctx = document.getElementById('grafico_valor_mes').getContext('2d');
+var ValorChart = new Chart(ctx, {
+    type: 'bar',
+    data: {
+        labels: [{% for mes in meses %}"{% trans mes %}",{% endfor %}],
+        datasets: [{
+            label: 'Vendas por mês Valor',
+            data: [{% for venda in vendas_por_mes_valor %}{{ venda.valor_vendas }},{% endfor %}],
+            backgroundColor: 'rgba(18, 176, 2, 0.2)',
+            borderColor: 'rgba(11, 113, 0)',
+            borderWidth: 1
+        }]
+    },
+    options: {
+        plugins: {
+            datalabels: {
+                anchor: 'end',
+                align: 'top',
+                formatter: function(value, context) {
+                    return value;
+                }
+            }
+        },
+        legend: {
+            display: false
+        },
+        scales: {
+            yAxes: [{
+                ticks: {
+                    beginAtZero: true
+                }
+            }]
+        }
+    }
+});
+
+var ctx = document.getElementById('grafico_valor_ano').getContext('2d');
+var ValorAnoChart = new Chart(ctx, {
+    type: 'bar',
+    data: {
+        labels: [
+                {% for venda in vendas_por_ano_valor %}
+                {{ venda.data_instalacao__year }},
+                {% endfor %}
+            ],
+        datasets: [{
+            label: 'Vendas por ano Valor',
+            data: [
+                {% for venda in vendas_por_ano_valor %}
+                {{ venda.valor_vendas }},
+                {% endfor %}
+            ],
+            backgroundColor: 'rgba(18, 176, 2, 0.2)',
+            borderColor: 'rgba(11, 113, 0)',
+            borderWidth: 1
+        }]
+    },
+    options: {
+        plugins: {
+            datalabels: {
+                anchor: 'end',
+                align: 'top',
+                formatter: function(value, context) {
+                    return value;
+                }
+            }
+        },
+        legend: {
+            display: false
+        },
+        scales: {
+            yAxes: [{
+                ticks: {
+                    beginAtZero: true
+                }
+            }]
+        }
+    }
+});
+
+// Gráfico de cancelamentos por mês
+var ctx = document.getElementById('grafico_cancelamentos_mes_valor').getContext('2d');
+var CancelamentosValorChart = new Chart(ctx, {
+    type: 'bar',
+    data: {
+        labels: [{% for mes in meses %}"{% trans mes %}",{% endfor %}],
+        datasets: [{
+            label: 'Cancelamentos por mês Valor',
+            data: [{% for cancelamento in cancelamentos_por_mes_valor %}{{ cancelamento.total_cancelamentos }},{% endfor %}],
+            backgroundColor: 'rgba(139, 0, 0, 0.2)',
+            borderColor: '#8B0000',
+            borderWidth: 1
+        }]
+    },
+    options: {
+        plugins: {
+            datalabels: {
+                anchor: 'end',
+                align: 'top',
+                formatter: function(value, context) {
+                    return value;
+                }
+            }
+        },
+        legend: {
+            display: false
+        },
+        scales: {
+            yAxes: [{
+                ticks: {
+                    beginAtZero: true
+                }
+            }]
+        }
+    }
+});
+
+// Gráfico de cancelamentos por ano
+var ctx = document.getElementById('grafico_cancelamentos_ano_valor').getContext('2d');
+var ValorCancelamentosAnoChart = new Chart(ctx, {
+    type: 'bar',
+    data: {
+        labels: [
+                {% for cancelamento in cancelamentos_por_ano_valor %}
+                {{ cancelamento.evento_data__year }},
+                {% endfor %}
+            ],
+        datasets: [{
+            label: 'Cancelamentos por ano Valor',
+            data: [
+                {% for cancelamento in cancelamentos_por_ano_valor %}
+                {{ cancelamento.valor_cancelamentos }},
+                {% endfor %}
+            ],
+            backgroundColor: 'rgba(139, 0, 0, 0.2)',
+            borderColor: '#8B0000',
+            borderWidth: 1
+        }]
+    },
+    options: {
+        plugins: {
+            datalabels: {
+                anchor: 'end',
+                align: 'top',
+                formatter: function(value, context) {
+                    return value;
+                }
+            }
+        },
+        legend: {
+            display: false
+        },
+        scales: {
+            yAxes: [{
+                ticks: {
+                    beginAtZero: true
+                }
+            }]
+        }
+    }
+});
+
+var ctx = document.getElementById('grafico_saldo_por_ano').getContext('2d');
+var SaldoChart = new Chart(ctx, {
+    type: 'bar',
+    data: {
+        labels: [
+                {% for saldo in saldo_por_ano %}
+                {{ saldo.ano }},
+                {% endfor %}
+            ],
+        datasets: [{
+            label: 'Saldo por ano',
+            data: [
+                {% for saldo in saldo_por_ano %}
+                {{ saldo.saldo }},
+                {% endfor %}
+            ],
+            backgroundColor: 'rgba(75, 192, 192, 0.2)',
+            borderColor: 'rgba(75, 192, 192, 1)',
+            borderWidth: 1
+        }]
+    },
+    options: {
+        plugins: {
+            datalabels: {
+                anchor: 'end',
+                align: 'top',
+                formatter: function(value, context) {
+                    return value;
+                }
+            }
+        },
+        legend: {
+            display: false
+        },
+        scales: {
+            yAxes: [{
+                ticks: {
+                    beginAtZero: true
+                }
+            }]
+        }
+    }
+});
+
+var ctx = document.getElementById('grafico_saldo_acumulado').getContext('2d');
+var SaldoAcumuladoChart = new Chart(ctx, {
+    type: 'bar',
+    data: {
+        labels: [
+                {% for saldo in saldo_por_ano %}
+                {{ saldo.ano }},
+                {% endfor %}
+            ],
+        datasets: [{
+            label: 'Saldo por ano',
+            data: [
+                {% for saldo in saldo_por_ano %}
+                {{ saldo.saldo_acumulado }},
+                {% endfor %}
+            ],
+            backgroundColor: 'rgba(0, 51, 113, 0.2)',
+            borderColor: 'rgba(0, 51, 113, 1)',
+            borderWidth: 1
+        }]
+    },
+    options: {
+        plugins: {
+            datalabels: {
+                anchor: 'end',
+                align: 'top',
+                formatter: function(value, context) {
+                    return value;
+                }
+            }
+        },
+        legend: {
+            display: false
+        },
+        scales: {
+            yAxes: [{
+                ticks: {
+                    beginAtZero: true
+                }
+            }]
+        }
+    }
+});
+
+var ctx = document.getElementById('grafico_saldo_por_ano_valor').getContext('2d');
+var SaldoValorAnoChart = new Chart(ctx, {
+    type: 'bar',
+    data: {
+        labels: [
+                {% for saldo in saldo_por_ano_valor %}
+                {{ saldo.ano }},
+                {% endfor %}
+            ],
+        datasets: [{
+            label: 'Saldo por ano',
+            data: [
+                {% for saldo in saldo_por_ano_valor %}
+                {{ saldo.saldo }},
+                {% endfor %}
+            ],
+            backgroundColor: 'rgba(75, 192, 192, 0.2)',
+            borderColor: 'rgba(75, 192, 192, 1)',
+            borderWidth: 1
+        }]
+    },
+    options: {
+        plugins: {
+            datalabels: {
+                anchor: 'end',
+                align: 'top',
+                formatter: function(value, context) {
+                    return value;
+                }
+            }
+        },
+        legend: {
+            display: false
+        },
+        scales: {
+            yAxes: [{
+                ticks: {
+                    beginAtZero: true
+                }
+            }]
+        }
+    }
+});
+
+var ctx = document.getElementById('grafico_saldo_valor_acumulado').getContext('2d');
+var SaldoValorAcumuladoChart = new Chart(ctx, {
+    type: 'bar',
+    data: {
+        labels: [
+                {% for saldo in saldo_por_ano_valor %}
+                {{ saldo.ano }},
+                {% endfor %}
+            ],
+        datasets: [{
+            label: 'Saldo por ano',
+            data: [
+                {% for saldo in saldo_por_ano_valor %}
+                {{ saldo.saldo_acumulado_valor }},
+                {% endfor %}
+            ],
+            backgroundColor: 'rgba(0, 51, 113, 0.2)',
+            borderColor: 'rgba(0, 51, 113, 1)',
+            borderWidth: 1
+        }]
+    },
+    options: {
+        plugins: {
+            datalabels: {
+                anchor: 'end',
+                align: 'top',
+                formatter: function(value, context) {
+                    return value;
+                }
+            }
+        },
+        legend: {
+            display: false
+        },
+        scales: {
+            yAxes: [{
+                ticks: {
+                    beginAtZero: true
+                }
+            }]
+        }
+    }
+});
+
+var ctx = document.getElementById('grafico_saldo_por_mes_valor').getContext('2d');
+var SaldoPorMesValorChart = new Chart(ctx, {
+    type: 'bar',
+    data: {
+        labels: [{% for mes in meses %}"{% trans mes %}",{% endfor %}],
+        datasets: [{
+            label: 'Saldo por ano',
+            data: [
+                {% for saldo in saldo_por_mes_valor %}
+                {{ saldo.saldo }},
+                {% endfor %}
+            ],
+            backgroundColor: 'rgba(75, 192, 192, 0.2)',
+            borderColor: 'rgba(75, 192, 192, 1)',
+            borderWidth: 1
+        }]
+    },
+    options: {
+        plugins: {
+            datalabels: {
+                anchor: 'end',
+                align: 'top',
+                formatter: function(value, context) {
+                    return value;
+                }
+            }
+        },
+        legend: {
+            display: false
+        },
+        scales: {
+            yAxes: [{
+                ticks: {
+                    beginAtZero: true
+                }
+            }]
+        }
+    }
+});
+
+var ctx = document.getElementById('grafico_saldo_por_mes').getContext('2d');
+var SaldoPorMesChart = new Chart(ctx, {
+    type: 'bar',
+    data: {
+        labels: [{% for mes in meses %}"{% trans mes %}",{% endfor %}],
+        datasets: [{
+            label: 'Saldo por ano',
+            data: [
+                {% for saldo in saldo_por_mes %}
+                {{ saldo.saldo }},
+                {% endfor %}
+            ],
+            backgroundColor: 'rgba(75, 192, 192, 0.2)',
+            borderColor: 'rgba(75, 192, 192, 1)',
+            borderWidth: 1
+        }]
+    },
+    options: {
+        plugins: {
+            datalabels: {
+                anchor: 'end',
+                align: 'top',
+                formatter: function(value, context) {
+                    return value;
+                }
+            }
+        },
+        legend: {
+            display: false
+        },
+        scales: {
+            yAxes: [{
+                ticks: {
+                    beginAtZero: true
+                }
+            }]
+        }
+    }
+});
+
+var dataAtual = new Date();
+var anoAtual = dataAtual.getFullYear();
+atualizarGrafico(anoAtual);
+
+</script>
+{% endblock %}

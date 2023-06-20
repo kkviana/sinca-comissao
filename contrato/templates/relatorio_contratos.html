@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Relatório de Contratos</title>
+</head>
+<body>
+  <h1>Relatório de Contratos</h1>
+  <table>
+    <thead>
+      <tr>
+        <th>Data de Instalação</th>
+        <th>Cliente</th>
+        <th>Valor</th>
+        <th>Vendedor</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for contrato in contratos %}
+        <tr>
+          <td>{{ contrato.data_instalacao }}</td>
+          <td>{{ contrato.cliente.nome }}</td>
+          <td>{{ contrato.total_contrato }}</td>
+          <td>{{ contrato.vendedor.nome }}</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</body>
+</html>

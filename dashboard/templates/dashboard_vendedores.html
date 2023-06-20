@@ -1,0 +1,329 @@
+{% extends "base.html" %}
+{% load my_filters %}
+
+{% block titulo_aba %}
+    Dashboard Vendedores
+{% endblock %}
+
+{% block content %}
+{% load i18n %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
+<!-- Gráfico de barras para vendas por mês -->
+<div class="container-fluid">
+    <div class="row">
+        <h1 class="text-center mt-1 mb-2 font-weight-bold">Gráficos Vendedores Anual</h1>
+    </div>
+    <div class="row">
+        <div class="col-md-12">
+            <h2> Gráfico Vendas Por Ano Por Vendedor</h2>
+            <canvas height='70' id="vendedor"></canvas>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-12">
+            <h2> Gráfico Valor Vendas Por Ano Por Vendedor</h2>
+            <canvas height='70' id="vendedor_valor"></canvas>
+        </div>
+    </div>
+
+    <div class="row">
+        <h1 class="text-center mt-4 mb-2 font-weight-bold">Gráficos Vendedores Mensais</h1>
+    </div>
+
+    <div class="col-md-2">
+        <label for="ano">Escolha o ano:</label>
+        <select class="form-control" id="ano" onchange="atualizarGrafico(this.value)">
+            {% for ano in anos %}
+                {% if forloop.last %}
+                    <option value="{{ ano|date:'Y' }}" selected>{{ ano|date:'Y' }}</option>
+                {% else %}
+                    <option value="{{ ano|date:'Y' }}">{{ ano|date:'Y' }}</option>
+                {% endif %}
+            {% endfor %}
+        </select>  
+        </select>
+    </div>
+    <div class="row">
+        <div class="col-md-12">
+            <h2> Gráfico Vendas Por Mês Por Vendedor</h2>
+            <canvas height='70' id="vendas_por_mes_vendedor"></canvas>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-12">
+            <h2> Gráfico Valor Vendas Por Mês Por Vendedor</h2>
+            <canvas height='70' id="vendas_por_mes_vendedor_valor"></canvas>
+        </div>
+    </div>
+</div>
+
+
+<script>
+{% regroup vendas_por_ano_por_vendedor by vendedor as vendas_por_vendedor %}
+var anos = new Set();
+{% for venda in vendas_por_ano_por_vendedor %}
+    anos.add({{ venda.data_instalacao__year }});
+{% endfor %}
+anos = Array.from(anos).sort();
+
+var ctx = document.getElementById('vendedor').getContext('2d');
+var vendasPorVendedorChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+        labels: anos.map(String),
+        datasets: [
+            {% for vendedor in vendas_por_vendedor %}
+                {
+                    label: 'Vendedor {{ vendedor.grouper }}',
+                    data: [
+                        {% for venda in vendedor.list %}
+                            {% if venda.data_instalacao__year >= 2000 %}
+                                {{ venda.numero_vendas }},
+                            {%endif%}
+                        {% endfor %}
+                    ],
+                    backgroundColor: getRandomColor(),
+                    borderColor: getRandomColor(),
+                    borderWidth: 1
+                },
+            {% endfor %}
+        ]
+    },
+    options: {
+        plugins: {
+            datalabels: {
+                anchor: 'end',
+                align: 'top',
+                formatter: function(value, context) {
+                    return value;
+                }
+            }
+        },
+        legend: {
+            display: true,
+            labels: {
+                generateLabels: function(chart) {
+                    var data = chart.data;
+                    if (data.labels.length && data.datasets.length) {
+                        return data.datasets.map(function(dataset, i) {
+                            return {
+                                text: dataset.label,
+                                fillStyle: dataset.backgroundColor,
+                                strokeStyle: dataset.borderColor,
+                                lineWidth: dataset.borderWidth,
+                                hidden: !chart.isDatasetVisible(i),
+                                index: i
+                            };
+                        });
+                    }
+                    return [];
+                }
+            }
+        },
+        scales: {
+            xAxes: [{
+                scaleLabel: {
+                    display: true,
+                    labelString: 'Ano'
+                }
+            }],
+            yAxes: [{
+                ticks: {
+                    beginAtZero: true
+                },
+                scaleLabel: {
+                    display: true,
+                    labelString: 'Número de vendas'
+                }
+            }]
+        }
+    }
+});
+    
+var ctx = document.getElementById('vendedor_valor').getContext('2d');
+var vendasPorVendedorChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+        labels: anos.map(String),
+        datasets: [
+            {% for vendedor in vendas_por_vendedor %}
+                {
+                    label: 'Vendedor {{ vendedor.grouper }}',
+                    data: [
+                        {% for venda in vendedor.list %}
+                            {% if venda.data_instalacao__year >= 2000 %}
+                                {{ venda.valor_vendas }},
+                            {%endif%}
+                        {% endfor %}
+                    ],
+                    backgroundColor: getRandomColor(),
+                    borderColor: getRandomColor(),
+                    borderWidth: 1
+                },
+            {% endfor %}
+        ]
+    },
+    options: {
+        plugins: {
+            datalabels: {
+                anchor: 'end',
+                align: 'top',
+                formatter: function(value, context) {
+                    return value;
+                }
+            }
+        },
+        legend: {
+            display: true,
+            labels: {
+                generateLabels: function(chart) {
+                    var data = chart.data;
+                    if (data.labels.length && data.datasets.length) {
+                        return data.datasets.map(function(dataset, i) {
+                            return {
+                                text: dataset.label,
+                                fillStyle: dataset.backgroundColor,
+                                strokeStyle: dataset.borderColor,
+                                lineWidth: dataset.borderWidth,
+                                hidden: !chart.isDatasetVisible(i),
+                                index: i
+                            };
+                        });
+                    }
+                    return [];
+                }
+            }
+        },
+        scales: {
+            xAxes: [{
+                scaleLabel: {
+                    display: true,
+                    labelString: 'Ano'
+                }
+            }],
+            yAxes: [{
+                ticks: {
+                    beginAtZero: true
+                },
+                scaleLabel: {
+                    display: true,
+                    labelString: 'Número de vendas'
+                }
+            }]
+        }
+    }
+});
+
+var ctx = document.getElementById('vendas_por_mes_vendedor').getContext('2d');
+var VendedorMesChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+        labels: [],
+        datasets: []
+    },
+    options: {
+        plugins: {
+            datalabels: {
+                anchor: 'end',
+                align: 'top',
+                formatter: function(value, context) {
+                    return value;
+                }
+            }
+        },
+        legend: {
+            display: false
+        },
+        scales: {
+            yAxes: [{
+                ticks: {
+                    beginAtZero: true
+                }
+            }]
+        }
+    }
+});
+
+var ctx = document.getElementById('vendas_por_mes_vendedor_valor').getContext('2d');
+var VendedorMesValorChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+        labels: [],
+        datasets: []
+    },
+    options: {
+        plugins: {
+            datalabels: {
+                anchor: 'end',
+                align: 'top',
+                formatter: function(value, context) {
+                    return value;
+                }
+            }
+        },
+        legend: {
+            display: false
+        },
+        scales: {
+            yAxes: [{
+                ticks: {
+                    beginAtZero: true
+                }
+            }]
+        }
+    }
+});
+
+function atualizarGrafico(ano) {
+    // Faz uma requisição para buscar os dados referentes ao ano selecionado
+    fetch('/dashboard/vendas_por_mes_vendedor/' + ano + '/')
+        .then(response => response.json())
+        .then(data => {
+            VendedorMesChart.data.labels = data.labels;
+            VendedorMesChart.data.datasets = [];
+            data.datasets.forEach(dataset => {
+                VendedorMesChart.data.datasets.push({
+                    label: dataset.label,
+                    data: dataset.data,
+                    fill: false,
+                    borderColor: '#' + Math.floor(Math.random()*16777215).toString(16),
+                    borderWidth: 1
+                });
+            });
+            VendedorMesChart.update();
+        });
+    fetch('/dashboard/vendas_por_mes_vendedor_valor/' + ano + '/')
+        .then(response => response.json())
+        .then(data => {
+            VendedorMesValorChart.data.labels = data.labels;
+            VendedorMesValorChart.data.datasets = [];
+            data.datasets.forEach(dataset => {
+                VendedorMesValorChart.data.datasets.push({
+                    label: dataset.label,
+                    data: dataset.data,
+                    fill: false,
+                    borderColor: '#' + Math.floor(Math.random()*16777215).toString(16),
+                    borderWidth: 1
+                });
+            });
+            VendedorMesValorChart.update();
+        });
+}
+
+function getRandomColor() {
+    var letters = '0123456789ABCDEF';
+    var color = '#';
+    for (var i = 0; i < 6; i++) {
+        color += letters[Math.floor(Math.random() * 16)];
+    }
+    return color;
+}
+
+var dataAtual = new Date();
+var anoAtual = dataAtual.getFullYear();
+atualizarGrafico(anoAtual);
+
+</script>
+
+{% endblock %}

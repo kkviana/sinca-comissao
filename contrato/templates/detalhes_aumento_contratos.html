@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+
+{% block titulo_aba %}
+Detalhes de Aumento e Novos Contratos
+{% endblock %}
+
+{% block content %}
+
+<h1>Detalhes de Aumento e Novos Contratos</h1>
+
+<form method="POST" action="{% url 'detalhes_aumento_contratos' %}">
+  {% csrf_token %}
+  <label for="ano">Selecione o ano:</label>
+  <select class="form-control" name="ano" required>
+    {% for ano in anos %}
+      <option value="{{ ano.year }}">{{ ano.year }}</option>
+    {% endfor %}
+  </select>
+  
+  <label for="mes">Selecione o mês:</label>
+  <select name="mes" id="mes">
+    {% for mes in meses %}
+      <option value="{{ forloop.counter }}">{{ mes }}</option>
+    {% endfor %}
+  </select>
+  
+  <button type="submit">Mostrar Detalhes</button>
+</form>
+
+{% if ano_selecionado and mes_selecionado %}
+  <h2>Detalhes para o mês selecionado:</h2>
+  <p>Ano: {{ ano_selecionado }}</p>
+  <p>Mês: {{ mes_selecionado }}</p>
+  <p>Valor Aumentado em Reajustes e Alterações de Contratos: R$ {{ valor_aumento|default:"0" }}</p>
+  <p>Valor dos Novos Contratos: R$ {{ valor_novos_contratos|default:"0" }}</p>
+{% endif %}
+
+{% endblock %}

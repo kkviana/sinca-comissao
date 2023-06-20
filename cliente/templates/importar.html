@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+
+{% block titulo_aba %}
+    Cadastro de Clientes
+{% endblock %}
+
+{% block content %}
+    <div class="container-fluid col-md-11">
+        <h1 class="text-center mb-4">Importação</h1>
+        <form method="POST">
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="filename">Filename:</label>
+                <input type="text" id="filename" name="filename" class="form-control" required>
+                <div class="invalid-feedback">Por favor, insira um nome válido.</div>
+            </div>
+            <button type="submit" class="btn btn-primary mt-3">Cadastrar</button>
+        </form>
+    </div>
+{% endblock %}
