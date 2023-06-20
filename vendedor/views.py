@@ -20,6 +20,7 @@ def lista_vendedores(request):
     vendedores = Vendedor.objects.filter(flinativo=False)
     return render(request, 'lista_vendedores.html', {'vendedores': vendedores})
 
+@login_required_all
 def inativar_vendedor(request, id_vendedor):
     vendedor = Vendedor.objects.get(id=id_vendedor)
     vendedor.flinativo = True

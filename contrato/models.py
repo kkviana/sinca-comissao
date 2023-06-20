@@ -2,6 +2,7 @@ from django.db import models
 from cliente.models import Cliente
 from produto.models import Produto
 from vendedor.models import Vendedor
+from django.utils import timezone
 
 
 class Contrato(models.Model):
@@ -33,6 +34,7 @@ class ContratoEvento(models.Model):
     contrato = models.ForeignKey(Contrato, on_delete=models.CASCADE)
     evento_tipo = models.ForeignKey(EventoTipo, on_delete=models.CASCADE)
     evento_descricao = models.CharField(max_length=255)
-    evento_data = models.DateTimeField(auto_now_add=True)
+    evento_data = models.DateTimeField(default=timezone.now) 
+    valor_alterado = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     class Meta:
         db_table = 'contrato_evento'

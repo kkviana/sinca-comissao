@@ -12,7 +12,7 @@
     <link rel="stylesheet" href="{% static 'assets/fonts/fontawesome-all.min.css' %}">
 </head>
 
-<body id="page-top">
+<body id="page-top" {%block body_propriedades%}{%endblock%}>
     <div id="wrapper">
         <nav class="navbar navbar-dark align-items-start sidebar sidebar-dark accordion bg-gradient-primary p-0" style="background: #01458c;">
             <div class="container-fluid d-flex flex-column p-0"><a class="navbar-brand d-flex justify-content-center align-items-center sidebar-brand m-0" href="{% url 'index' %}" style="width: 224px;">
@@ -27,13 +27,16 @@
                     <li class="nav-item"><a class="nav-link" href="{% url 'lista_produtos' %}"><i class="fas fa-boxes"></i><span>Consulta de Produtos</span></a></li>
                     <li class="nav-item"><a class="nav-link" href="{% url 'cadastrar_vendedor' %}"><i class="fas fa-money-check-alt"></i><span>Cadastro de Vendedores</span></a></li>
                     <li class="nav-item"><a class="nav-link" href="{% url 'lista_vendedores' %}"><i class="fas fa-search"></i><span>Consulta de Vendedores</span></a></li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'dashboard_vendedores' %}"><i class="fas fa-chart-pie"></i><span>Análise de Vendedores</span></a></li>
                     <li class="nav-item"><a class="nav-link" href="{% url 'novo_contrato' %}"><i class="fas fa-file-signature"></i><span>Novo Contrato</span></a></li>
                     <li class="nav-item"><a class="nav-link" href="{% url 'listar_contratos' %}"><i class="fas fa-file"></i><span>Consulta de Contratos</span></a></li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'dashboard_contratos' %}"><i class="fas fa-chart-pie"></i><span>Analise de Contratos</span></a></li>
                     <li class="nav-item"><a class="nav-link" href="{% url 'atualizar_contratos' %}"><i class="fas fa-chart-line"></i><span>Reajuste de Preço</span></a></li>
                     <li class="nav-item"><a class="nav-link" href="{% url 'fechar_comissao' %}"><i class="fas fa-hand-holding-usd"></i><span>Fechar Comissão</span></a></li>
                     <li class="nav-item"><a class="nav-link"href="{% url 'listar_comissoes' %}"><i class="fas fa-search-dollar"></i><span>Consulta de Comissões</span></a></li>
+                    <li class="nav-item"><a class="nav-link"href="{% url 'detalhes_aumento_contratos' %}"><i class="fas fa-search-dollar"></i><span>Consulta Aumento/Novos Contratos</span></a></li>
                 </ul>
-                <div class="text-center d-none d-md-inline"><button class="btn rounded-circle border-0" id="sidebarToggle" type="button"></button></div>
+                <!--<div class="text-center d-none d-md-inline"><button class="btn rounded-circle border-0" id="sidebarToggle" type="button"></button></div>-->
             </div>
         </nav>
         <div class="d-flex flex-column" id="content-wrapper">
@@ -44,7 +47,7 @@
                         <form class="d-none d-sm-inline-block me-auto ms-md-3 my-2 my-md-0 mw-100 navbar-search">
                             <div class="input-group"></div>
                         </form>
-                        <ul class="navbar-nav flex-nowrap ms-auto">
+                        <!--<ul class="navbar-nav flex-nowrap ms-auto">
                             <li class="nav-item dropdown d-sm-none no-arrow"><a class="dropdown-toggle nav-link" aria-expanded="false" data-bs-toggle="dropdown" href="#"><i class="fas fa-search"></i></a>
                                 <div class="dropdown-menu dropdown-menu-end p-3 animated--grow-in" aria-labelledby="searchDropdown">
                                     <form class="me-auto navbar-search w-100">
@@ -60,7 +63,7 @@
                                     </div>
                                 </div>
                             </li>
-                        </ul>
+                        </ul>-->
                     </div>
                 </nav>
             {% block content %}

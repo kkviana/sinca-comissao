@@ -12,7 +12,9 @@ Consulta de Comissões
         <tr>
           <th scope="col">Mês</th>
           <th scope="col">Vendedor</th>
-          <th scope="col">Comissão</th>
+          <th scope="col">Comissão Fixa</th>
+          <th scope="col">Comissão Bônus Mensal</th>
+          <th scope="col">Comissão Total</th>
         </tr>
       </thead>
       <tbody class="table-group-divider">
@@ -20,7 +22,9 @@ Consulta de Comissões
         <tr>
           <td>{{ comissao.data }}</td>
           <td>{{ comissao.contrato__vendedor__nome }}</td>
-          <td>R$ {{ comissao.soma_comissao|floatformat:2 }}</td>
+          <td>R$ {{ comissao.comissao_fixa|floatformat:2 }}</td>
+          <td>R$ {{ comissao.bonus_mensal|floatformat:2 }}</td>
+          <td>R$ {{ comissao.comissao_total|floatformat:2 }}</td>
         </tr>
         {% endfor %}
       </tbody>

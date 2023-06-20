@@ -11,24 +11,28 @@ Novo Contrato
   <form method="POST" action="/contrato/novo/" onsubmit="salvarContrato(event)">
     {% csrf_token %}
     <div class="form-group">
-      <h2 class="mt-4 mb-3">Selecionar Cliente</h2>
-      <label for="cliente">Selecione um cliente:</label>
-      <select name="cliente" id="cliente" class="form-control" required>
-        <option value="" selected>Selecione um cliente</option>
-        {% for cliente in clientes %}
-        <option value="{{ cliente.id }}">{{ cliente.nome }}</option>
-        {% endfor %}
-      </select>
-    </div>
-    <div class="form-group">
-      <h2 class="mt-4 mb-3">Selecionar Vendedor</h2>
-      <label for="vendedor">Selecione um vendedor:</label>
-      <select name="vendedor" id="vendedor" class="form-control" required>
-        <option value="" selected>Selecione um vendedor</option>
-        {% for vendedor in vendedores %}
-        <option value="{{ vendedor.id }}">{{ vendedor.nome }}</option>
-        {% endfor %}
-      </select>
+      <div class="row">       
+        <div class="col-md-6">
+          <h2 class="mt-4 mb-3">Selecionar Cliente</h2>
+          <div class="input-group">
+            <input type="hidden" name="cliente_id" id="cliente_id" value="">
+            <label for="cliente-search">Selecionar Cliente:</label>
+            <div class="input-group">
+              <input type="text" id="cliente-search" name="cliente-search" class="form-control search-input full-width" placeholder="Digite o código ou nome do cliente">
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <h2 class="mt-4 mb-3">Selecionar Vendedor</h2>
+          <label for="vendedor">Selecione um vendedor:</label>
+          <select name="vendedor" id="vendedor" class="form-control" required>
+            <option value="" selected>Selecione um vendedor</option>
+            {% for vendedor in vendedores %}
+            <option value="{{ vendedor.id }}">{{ vendedor.nome }}</option>
+            {% endfor %}
+          </select>
+        </div>
+      </div>
     </div>
     <div class="form-group">
       <div class="row">       
@@ -79,30 +83,84 @@ Novo Contrato
     <button type="submit" class="btn btn-primary mt-3">Salvar Contrato</button>
   </form>
 </div>
+
+<style>
+  .tt-suggestion {
+    background-color: #ffffff !important;
+    width: 100% !important;
+  }
+  
+  .tt-input {
+    width: 100% !important;
+  }
+
+  .tt-menu {
+    background-color: #ffffff !important;
+    border: 1px solid #cccccc;
+  }
+  .input-group {
+    width: 100%;
+  }
+  .typeahead .tt-input {
+    width: 100% !important;
+  }
+  .full-width {
+    width: 100%;
+  }
+</style>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.1.0-rc.0/js/select2.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/typeahead.js/0.11.1/typeahead.bundle.min.js"></script>
+
 <script>
+  
   const listaProdutos = [];
+
+  function removerProduto(indice) {
+    listaProdutos.splice(indice - 1, 1);
+    document.querySelector('#lista_produtos').removeChild(document.querySelector('#lista_produtos').childNodes[indice - 1]);
+    atualizarTotalContrato(); // Adicionar essa linha para atualizar o total do contrato
+  }
+  
 
   function adicionarProduto() {
     const produtoId = document.querySelector('#produto').value;
     const produtoNome = document.querySelector('#produto option:checked').textContent;
     const preco = document.querySelector('#preco').value;
     const quantidade = document.querySelector('#quantidade').value;
-
+  
+    // Check if quantity is empty
+    if (!quantidade) {
+      alert('Por favor, informe a quantidade antes de adicionar o produto.');
+      return;
+    }
+  
     const novoProduto = {
       id: produtoId,
       nome: produtoNome,
       preco: preco,
       quantidade: quantidade
     };
-
+  
     listaProdutos.push(novoProduto);
-
+  
     const novoItem = document.createElement('li');
-    novoItem.textContent = `${produtoNome} - R$ ${preco} - ${quantidade} unidades`;
+    novoItem.innerHTML = `${produtoNome} - R$ ${preco} - ${quantidade} unidades <button type="button" class="btn btn-danger btn-sm" onclick="removerProduto(${listaProdutos.length})">Excluir</button>`;
     document.querySelector('#lista_produtos').appendChild(novoItem);
+  
+    // Clear the input fields
+    document.querySelector('#produto').value = '';
+    document.querySelector('#preco').value = '';
 
+  
+    // Clear the product and price fields
+    document.querySelector('#produto').selectedIndex = 0;
+    document.querySelector('#preco').value = '';
+  
     atualizarTotalContrato();
   }
+  
 
   function atualizarPreco() {
     const produtoId = document.querySelector('#produto').value;
@@ -130,5 +188,63 @@ Novo Contrato
       document.querySelector('#produtos').value = JSON.stringify(listaProdutos);
     }
   }
+
+  $(document).ready(function() {
+    var clientes = new Bloodhound({
+      datumTokenizer: Bloodhound.tokenizers.obj.whitespace('nome', 'id'),
+      queryTokenizer: Bloodhound.tokenizers.whitespace,
+      local: [{% for cliente in clientes %}{ "id": "{{ cliente.id }}", "nome": "{{ cliente.nome }}" }{% if not forloop.last %},{% endif %}{% endfor %}]
+    });
+  
+    clientes.initialize();
+  
+    $('#cliente-search').typeahead({
+      minLength: 1,
+      highlight: true
+    }, {
+      name: 'clientes',
+      displayKey: 'nome',
+      source: clientes.ttAdapter(),
+      templates: {
+        suggestion: function(data) {
+          return `<div><strong>Código:</strong> ${data.id} - ${data.nome}</div>`;
+        }
+      }
+    }).on('typeahead:selected', function(ev, suggestion) {
+      $('#cliente-search').val(suggestion.id);
+      $('#cliente_id').val(suggestion.id);
+    });
+
+    $('#cliente-search').css('width', '100%');
+    $('.search-input').css('width', '100%');
+    
+    $('#cliente-search-button').click(function() {
+      var searchTerm = $('#cliente-search').val();
+      var clienteSelect = $('#cliente');
+      
+      // Verifica se o campo de busca está vazio
+      if (matchingOption.length > 0) {
+        var clienteId = matchingOption.data('id');
+        clienteSelect.val(clienteId).trigger('change');
+      } else {
+        alert('Cliente não encontrado.');
+      }
+      
+      // Verifica se o valor buscado corresponde a um cliente existente
+      var matchingOption = $('#cliente option').filter(function() {
+        return $(this).text().toLowerCase().includes(searchTerm.toLowerCase());
+      });
+      
+      // Se houver um cliente correspondente, seleciona-o no campo de seleção
+      if (matchingOption.length > 0) {
+        clienteSelect.val(matchingOption.val()).trigger('change');
+      } else {
+        alert('Cliente não encontrado.');
+      }
+    });
+
+    $('#cliente-search-button').css('width', '100%');
+
+  });
 </script>
 {% endblock %}

@@ -24,6 +24,10 @@ Reajuste Contratos
                         <div class="col-auto mt-2">
                             <button type="submit" class="btn btn-primary">Atualizar</button>
                         </div>
+                        <div class="col-auto mt-2 ml-3">
+                            <button type="button" id="selecionar-todos" class="btn btn-secondary">Selecionar Todos</button>
+                            <button type="button" id="desmarcar-todos" class="btn btn-secondary">Desmarcar Todos</button>
+                        </div>
                     </div>
                     <hr>
                     <div class="container-fluid">
@@ -48,4 +52,20 @@ Reajuste Contratos
             </div>
         </div>
     </div>
+
+    <script>
+        document.getElementById('selecionar-todos').addEventListener('click', function() {
+            var checkboxes = document.getElementsByName('contratos_marcados');
+            for (var i = 0; i < checkboxes.length; i++) {
+                checkboxes[i].checked = true;
+            }
+        });
+
+        document.getElementById('desmarcar-todos').addEventListener('click', function() {
+            var checkboxes = document.getElementsByName('contratos_marcados');
+            for (var i = 0; i < checkboxes.length; i++) {
+                checkboxes[i].checked = false;
+            }
+        });
+    </script>
 {% endblock %}

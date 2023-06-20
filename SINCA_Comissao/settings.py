@@ -3,6 +3,7 @@ from pathlib import Path
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+DEFAULT_CHARSET = 'utf-8'
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.1/howto/deployment/checklist/
@@ -13,7 +14,7 @@ SECRET_KEY = 'django-insecure-o*z6t24d#6mf@ywk7vwivxh!t75#f#a$z-hwjl06gx^$%p(z-0
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['192.168.1.121']
 
 APPEND_SLASH = False
 
@@ -26,12 +27,15 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.humanize',
     'meuapp',
     'produto',
     'cliente',
     'contrato',
     'comissao',
-    'vendedor'
+    'vendedor',
+    'SINCA_Comissao',
+    'dashboard',
 ]
 
 MIDDLEWARE = [
@@ -71,9 +75,9 @@ WSGI_APPLICATION = 'SINCA_Comissao.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'sinca_comissao',
-        'USER': 'sinca_comissao',
-        'PASSWORD': 'sinca_comissao',
+        'NAME': 'sinca_comissao_apresentacao',
+        'USER': 'sinca_comissao_apresentacao',
+        'PASSWORD': 'vasco123',
         'HOST': 'bd.hardshop.com.br',
         'PORT': '3306',
     }

@@ -5,7 +5,11 @@ from .models import Comissao
 from contrato.models import Contrato
 from datetime import datetime
 from django.http import HttpResponse, HttpResponseRedirect
+import csv
+from cliente.models import Cliente
+from meuapp.utils import login_required_all
 
+@login_required_all
 def calcular_comissao_old(request):
     if request.method == 'POST':
         data = request.POST.get('mes_ano')
@@ -64,6 +68,7 @@ def calcular_comissao_old(request):
         contratos = Contrato.objects.filter(comissao_id__isnull=True)
         return render(request, 'listar_contratos_comissao.html', {'contratos': contratos, 'mes_anterior': mes_anterior})
 
+@login_required_all
 def fechar_comissao(request):
     if request.method == 'POST':
         # Obtém a data selecionada no formulário como uma string
@@ -71,48 +76,57 @@ def fechar_comissao(request):
 
         # Converte a string de data em um objeto date
         data = datetime.strptime(data_str, '%Y-%m').date()
-
+        print(data)
         # Obtém todos os contratos do mês selecionado
-        contratos_mes = Contrato.objects.filter(data_contrato__month=data.month, data_contrato__year=data.year, flcancelado=False)
-
-        # Verifica se a data selecionada é o mês atual
-        mes_atual = data == datetime.now().strftime('%Y-%m')
-
+        contratos_mes = Contrato.objects.filter(data_instalacao__month=data.month, data_instalacao__year=data.year, flcancelado=False)
+        print(contratos_mes)
         # Verifica a quantidade de contratos do mês selecionado
         quantidade_contratos_mes = contratos_mes.count()
         todos_contratos = Contrato.objects.filter(flcancelado=False)
-
-        # Verifica a quantidade de contratos feitos até o mês selecionado
-        contratos_total = Contrato.objects.filter(data_contrato__lt=data, flcancelado=False).count()
 
         # Remove todos os registros de comissão existentes para o mês selecionado
         Comissao.objects.filter(data=data_str).delete()
 
         # Percorre todos os contratos do mês selecionado
         for contrato in todos_contratos:
+            vendedor_id = contrato.vendedor_id
+            quantidade_contratos_mes_vendedor = Contrato.objects.filter(vendedor_id=vendedor_id, data_instalacao__month=data.month, data_instalacao__year=data.year).count()
             # Verifica se o contrato é de um mês anterior à data selecionada
-            if contrato.data_contrato.month < data.month or contrato.data_contrato.year < data.year:
+            if (contrato.data_instalacao.month < data.month or contrato.data_instalacao.year < data.year) and contrato.vendedor_id == 2:
                 # Atribui 5% do valor do contrato como comissão
-                comissao_valor_contrato = contrato.total_contrato * Decimal('0.05')
+                valor_comissao_retroativa = contrato.total_contrato * Decimal('0.05')
+                comissao_valor_contrato = 0
+            elif contrato.data_instalacao.month < data.month or contrato.data_instalacao.year < data.year and contrato.vendedor_id != 2:
+                # Atribui 5% do valor do contrato como comissão
+                valor_comissao_retroativa = 0
+                comissao_valor_contrato = 0
+            elif contrato.data_instalacao.month > data.month or contrato.data_instalacao.year > data.year:
+                valor_comissao_retroativa = 0
+                comissao_valor_contrato = 0
             else:
                 # Calcula a comissão com base na quantidade de contratos do mês
-                if quantidade_contratos_mes < 10:
+                if quantidade_contratos_mes_vendedor < 7.5:
                     comissao_valor_contrato = contrato.total_contrato
-                elif 10 <= quantidade_contratos_mes <= 20:
-                    comissao_valor_contrato = contrato.total_contrato * 2
+                    valor_comissao_retroativa = 0
+                elif 7.5 <= quantidade_contratos_mes_vendedor <= 10:
+                    comissao_valor_contrato = contrato.total_contrato * Decimal('1.5')
+                    valor_comissao_retroativa = 0
                 else:
-                    comissao_valor_contrato = contrato.total_contrato * 3
+                    comissao_valor_contrato = contrato.total_contrato * Decimal('2')
+                    valor_comissao_retroativa = 0
 
             # Cria uma nova instância de Comissao com os valores calculados para o contrato
-            comissao = Comissao(data=data_str, valor_contrato_mes=comissao_valor_contrato, contrato=contrato)
+            comissao = Comissao(data=data_str, valor_contrato_mes=comissao_valor_contrato, contrato=contrato, valor_comissao_retroativa=valor_comissao_retroativa)
 
             # Salva a comissão no banco de dados
             comissao.save()
 
         # Redireciona para a página de comissões
-        return render(request, 'listar_comissoes.html')
+        comissoes = Comissao.objects.values('data', 'contrato__vendedor__nome').annotate(soma_comissao=Sum('valor_contrato_mes'))
+        return render(request, 'listar_comissoes.html', {'comissoes': comissoes})
     return render(request, 'fechar_comissao.html')
 
+@login_required_all
 def calcular_comissao():
     # Obtém todas as comissões
     comissoes = Comissao.objects.all()
@@ -148,9 +162,16 @@ def calcular_comissao():
     # Retorna o dicionário com os resultados
     return resultados
 
+@login_required_all
 def listar_comissoes(request):
     # Agrupa as comissões por mês e soma seus valores
-    comissoes = Comissao.objects.values('data', 'contrato__vendedor__nome').annotate(soma_comissao=Sum('valor_contrato_mes'))
-    print (comissoes)
-    return render(request, 'listar_comissoes.html', {'comissoes': comissoes})
+    comissoes = Comissao.objects.values('data', 'contrato__vendedor__nome').annotate(
+        bonus_mensal=Sum('valor_contrato_mes'),
+        comissao_fixa=Sum('valor_comissao_retroativa')
+    )
 
+    # Adiciona a soma das duas colunas em uma nova coluna
+    for comissao in comissoes:
+        comissao['comissao_total'] = comissao['bonus_mensal'] + comissao['comissao_fixa']
+    
+    return render(request, 'listar_comissoes.html', {'comissoes': comissoes})

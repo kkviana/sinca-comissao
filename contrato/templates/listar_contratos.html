@@ -6,6 +6,49 @@
 
 {% block content %}
   <h1 class="text-center mb-4">Lista de Contratos</h1>
+
+  <form method="get" class="mb-3">
+    <div class="row">
+      <div class="col-md-4">
+        <label for="filtro_data_inicio">Data Instalação Início:</label>
+        <input type="date" name="data_inicio" id="filtro_data_inicio" class="form-control" value="{{ request.GET.data_inicio }}">
+      </div>
+      <div class="col-md-4">
+        <label for="filtro_data_fim">Data Instalação Fim:</label>
+        <input type="date" name="data_fim" id="filtro_data_fim" class="form-control" value="{{ request.GET.data_fim }}">
+      </div>
+      <div class="col-md-4">
+        <label for="filtro_cliente">Cliente:</label>
+        <input type="text" name="cliente" id="filtro_cliente" class="form-control" value="{{ request.GET.cliente }}">
+      </div>
+      <div class="col-md-4">
+        <label for="filtro_data_inicio_alteracao">Data Alteração Início:</label>
+        <input type="date" name="data_inicio_alteracao" id="filtro_data_inicio_alteracao" class="form-control" value="{{ request.GET.data_inicio_alteracao }}">
+      </div>
+      <div class="col-md-4">
+        <label for="filtro_data_fim_alteracao">Data Alteração Fim:</label>
+        <input type="date" name="data_fim_alteracao" id="filtro_data_fim_alteracao" class="form-control" value="{{ request.GET.data_fim_alteracao }}">
+      </div>
+      <div class="col-md-4">
+        <label for="codigo_cliente">Código Cliente:</label>
+        <input type="number" name="codigo_cliente" id="codigo_cliente" class="form-control" value="{{ request.GET.codigo_cliente }}">
+      </div>
+      <div class="col-md-4">
+        <label for="filtro_vendedor">Vendedor:</label>
+        <select name="vendedor" id="filtro_vendedor" class="form-control">
+          <option value="">Todos</option>
+          {% for vendedor in vendedores %}
+            <option value="{{ vendedor.id }}">{{ vendedor.nome }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-md-4 d-flex align-items-end">
+        <button type="submit" class="btn btn-primary">Filtrar</button>
+        <a href="{% url 'listar_contratos' %}" class="btn btn-secondary ms-3">Limpar Filtros</a>
+      </div>
+    </div>
+  </form>
+
   <table class="table table-striped">
     <thead>
       <tr>
@@ -15,6 +58,7 @@
         <th>Total</th>
         <th>Editar</th>
         <th>Cancelar</th>
+        <th>Excluir</th>
       </tr>
     </thead>
     <tbody class="table-group-divider">
@@ -30,9 +74,16 @@
           <td>
             <form id="form-{{ contrato.id }}" action="{% url 'cancelar_contrato' contrato.id %}" method="post">
               {% csrf_token %}
-              <input type="hidden" name="motivo" value="{{ contrato.id }}">
-              <input class='btn btn-danger'type="button" value="Cancelar Contrato" onclick="exibirCampoRazao('{{ contrato.id }}')">
+              <input type="hidden" name="motivo" id="motivo-{{ contrato.id }}" value="{{ contrato.id }}">
+              <input class='btn btn-danger' type="button" value="Cancelar Contrato" onclick="exibirCampoRazao('{{ contrato.id }}')">
+            </form> 
+          </td>
+          <td>
+            <form id="form-excluir-{{ contrato.id }}" action="{% url 'excluir_contrato' contrato.id %}" method="post">
+              {% csrf_token %}
+              <input class="btn btn-danger" type="submit" value="Excluir Contrato" onclick="return confirm('Tem certeza que deseja excluir o contrato?')">
             </form>
+            
           </td>
         </tr>
       {% empty %}
@@ -43,25 +94,62 @@
     </tbody>
   </table>
 
+  <form method="get" action="{% url 'relatorio_contratos' %}">
+    <input type="hidden" name="contratos" value="{% for contrato in contratos %}{{ contrato.pk }},{% endfor %}">
+    <button class="btn btn-primary" type="submit">Gerar Relatório</button>
+  </form>
+
+  <div class="pagination">
+    <span class="step-links">
+      {% if contratos.has_previous %}
+          <a href="?pagina=1">&laquo; primeiro</a>
+          <a href="?pagina={{ contratos.previous_page_number }}">anterior</a>
+      {% endif %}
+  
+      <span class="current-page">
+          Página {{ contratos.number }} de {{ contratos.paginator.num_pages }}.
+      </span>
+  
+      {% if contratos.has_next %}
+          <a href="?pagina={{ contratos.next_page_number }}">próximo</a>
+          <a href="?pagina={{ contratos.paginator.num_pages }}">último &raquo;</a>
+      {% endif %}
+    </span>
+  </div>  
+
+  {% if contratos.has_next == False %}
+  <div class="total-contratos">
+    Total dos contratos filtrados: R$ {{ total_contratos|floatformat:2 }}
+  </div>
+  {% endif %}
+  
   <script>
     function exibirCampoRazao(id_contrato) {
       var form = document.getElementById('form-' + id_contrato);
-      var razaoContainer = document.createElement('div');
-      razaoContainer.innerHTML = '<label for="razao">Razão de Cancelamento:</label><input type="text" name="razao" id="razao"><input type="button" value="Confirmar" onclick="cancelarContrato(' + id_contrato + ')">';
-      form.appendChild(razaoContainer);
+      var motivoContainer = document.createElement('div');
+      motivoContainer.innerHTML = '<label for="motivo">Motivo do Cancelamento:</label><input type="text" name="motivo" id="motivo"><br><label for="data_cancelamento">Data do Cancelamento:</label><input type="date" name="data_cancelamento" id="data_cancelamento"><br><input type="button" value="Confirmar" onclick="cancelarContrato(' + id_contrato + ')">';
+      form.parentNode.appendChild(motivoContainer);
     }
-
+    
     function cancelarContrato(id_contrato) {
       var form = document.getElementById('form-' + id_contrato);
-      var razaoInput = document.getElementById('razao');
-      if (razaoInput.value != null && razaoInput.value != "") {
-        var motivoInput = document.createElement('input');
-        motivoInput.type = 'hidden';
-        motivoInput.name = 'motivo';
-        motivoInput.value = razaoInput.value;
-        form.appendChild(motivoInput);
-        form.submit();
-      }
+      var motivoInput = document.getElementById('motivo').value;
+      var dataCancelamentoInput = document.getElementById('data_cancelamento').value;
+    
+      var motivoHiddenInput = document.createElement('input');
+      motivoHiddenInput.type = 'hidden';
+      motivoHiddenInput.name = 'motivo';
+      motivoHiddenInput.value = motivoInput;
+    
+      var dataCancelamentoHiddenInput = document.createElement('input');
+      dataCancelamentoHiddenInput.type = 'hidden';
+      dataCancelamentoHiddenInput.name = 'data_cancelamento';
+      dataCancelamentoHiddenInput.value = dataCancelamentoInput;
+    
+      form.appendChild(motivoHiddenInput);
+      form.appendChild(dataCancelamentoHiddenInput);
+      form.submit();
     }
+    
   </script>
 {% endblock %}

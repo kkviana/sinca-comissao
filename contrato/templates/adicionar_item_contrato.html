@@ -2,7 +2,7 @@
 
 {% block content %}
 <div class="container">
-    <form method="POST" action="{% url 'adicionar_item_contrato' contrato.id %}" method="post" onsubmit="salvarContrato(event)">
+    <form method="POST" action="{% url 'adicionar_item_contrato' contrato.id %}" onsubmit="salvarContrato(event)">
         {% csrf_token %}
         <h2 class="mt-4 mb-3">Adicionar Produtos</h2>
         <div id="form_produto" class="row">
@@ -21,7 +21,7 @@
             </div>
             <div class="col-md-2">
                 <label for="quantidade">Quantidade:</label>
-                <input type="number" name="quantidade" id="quantidade" class="form-control">
+                <input type="number" name="quantidade" id="quantidade" class="form-control" value="1">
             </div>
             <div class="col-md-2 d-flex align-items-end">
                 <button type="button" class="btn btn-primary mt-2" onclick="adicionarProduto()">Adicionar</button>
@@ -32,36 +32,51 @@
         <ul id="lista_produtos" class="list-group">
         </ul>
         <input type="hidden" name="produtos" id="produtos" value="">
-        <h2 class="mt-4 mb-3">Total novos itens</h2>
-        <p id="total_contrato" class="h4">R$ 0</p>
         <input type="hidden" name="total_contrato" id="total_contrato_input" value="">
         <input type="submit" value="Adicionar itens">
     </form>
 </div>
 <script>
   const listaProdutos = [];
+
+  function removerProduto(indice) {
+    listaProdutos.splice(indice, 1);
+    document.querySelector('#lista_produtos').removeChild(document.querySelector('#lista_produtos').childNodes[indice]);
+    atualizarTotalContrato();
+  }
   
   function adicionarProduto() {
-      const produtoId = document.querySelector('#produto').value;
-      const produtoNome = document.querySelector('#produto option:checked').textContent;
-      const preco = document.querySelector('#preco').value;
-      const quantidade = document.querySelector('#quantidade').value;
-  
-      const novoProduto = {
-          id: produtoId,
-          nome: produtoNome,
-          preco: preco,
-          quantidade: quantidade
-      };
-  
-      listaProdutos.push(novoProduto);
-  
-      const novoItem = document.createElement('li');
-      novoItem.textContent = `${produtoNome} - R$ ${preco} - ${quantidade} unidades`;
-      document.querySelector('#lista_produtos').appendChild(novoItem);
-  
-      atualizarTotalContrato();
-  }
+    const produtoId = document.querySelector('#produto').value;
+    const produtoNome = document.querySelector('#produto option:checked').textContent;
+    const preco = document.querySelector('#preco').value;
+    const quantidade = document.querySelector('#quantidade').value;
+
+    // Check if quantity is empty
+    if (!quantidade) {
+        alert('Por favor, informe a quantidade antes de adicionar o produto.');
+        return;
+    }
+
+    const novoProduto = {
+        id: produtoId,
+        nome: produtoNome,
+        preco: preco,
+        quantidade: quantidade
+    };
+
+    listaProdutos.push(novoProduto);
+
+    const novoItem = document.createElement('li');
+    novoItem.innerHTML = `${produtoNome} - R$ ${preco} - ${quantidade} unidades <button type="button" class="btn btn-danger btn-sm" onclick="removerProduto(${listaProdutos.length})">Excluir</button>`;
+    document.querySelector('#lista_produtos').appendChild(novoItem);
+
+    // Clear the input fields
+    document.querySelector('#produto').value = '';
+    document.querySelector('#preco').value = '';
+    document.querySelector('#quantidade').value = '';
+
+    atualizarTotalContrato();
+}
   
   function atualizarPreco() {
       const produtoId = document.querySelector('#produto').value;
@@ -82,10 +97,12 @@
   }
   
   function salvarContrato(event) {
+    if (listaProdutos.length === 0) {
       event.preventDefault();
-  
+      alert('Adicione pelo menos um produto ao contrato.');
+    } else {
       document.querySelector('#produtos').value = JSON.stringify(listaProdutos);
-      document.querySelector('form').submit();
+    }
   }
   </script>
   {% endblock %}

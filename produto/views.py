@@ -30,6 +30,7 @@ def editar_produto(request, id_produto):
         form = ProdutoForm(instance=produto)
     return render(request, 'editar_produto.html', {'form': form, 'produto': produto})
 
+@login_required_all
 def inativar_produto(request, id_produto):
     produto = Produto.objects.get(id=id_produto)
     produto.flinativo = True

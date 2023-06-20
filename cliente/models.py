@@ -8,3 +8,9 @@ class Cliente(models.Model):
 
     class Meta:
         db_table = 'cliente'
+
+class Timestamp(models.Model):
+    timestamp = models.IntegerField()
+
+    class Meta:
+        db_table = 'timestamp'
