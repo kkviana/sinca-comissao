@@ -75,10 +75,10 @@ WSGI_APPLICATION = 'SINCA_Comissao.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'sinca_comissao_apresentacao',
-        'USER': 'sinca_comissao_apresentacao',
-        'PASSWORD': 'vasco123',
-        'HOST': 'bd.hardshop.com.br',
+        'NAME': '',
+        'USER': '',
+        'PASSWORD': '',
+        'HOST': '',
         'PORT': '3306',
     }
 }
